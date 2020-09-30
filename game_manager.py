@@ -4,11 +4,11 @@ import time
 import base64
 import yaml
 
-def new_game(player_file_path="players.csv", game_file_path="game.yml"):
+def new_game(player_file_path, game_file_path):
     """
     Creates a new game file
     """
-    with open("players.csv") as player_file:
+    with open(player_file_path) as player_file:
         player_list = list(csv.DictReader(player_file))
 
     player_count = len(player_list)
@@ -44,6 +44,22 @@ def new_game(player_file_path="players.csv", game_file_path="game.yml"):
         })
 
     game = {"timestamp":time.time(),"giver_list":giver_list}
-
+    print(game)
     with open(game_file_path,mode="w") as game_file:
         yaml.dump(game,game_file)
+
+def load_game(game_file_path):
+    """
+    Loads a game file, decodes the data, and saves it in a file
+    """
+    with open(game_file_path) as game_file:
+        game = yaml.safe_load(game_file)
+
+    for p in game["giver_list"]:
+        p["reciever"]=base64.b64decode(p["reciever"]).decode("utf-8")
+        p["giver"]["name"]=base64.b64decode(p["giver"]["name"]).decode("utf-8")
+        p["giver"]["email"]=base64.b64decode(p["giver"]["email"]).decode("utf-8")   
+    print(game)
+    game["decode_timestamp"] = time.time()
+    with open(game_file_path+"_decoded",mode='w') as decoded_game_file:
+        yaml.dump(game,decoded_game_file)
